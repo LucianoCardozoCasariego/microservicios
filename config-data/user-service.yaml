@@ -38,18 +38,6 @@ resilience4j.circuitbreaker:
             waitDurationInOpenState: 5s
             failureRateThreshold: 50
             eventConsumerBufferSize: 10
-management:
-  tracing:
-    enabled: true
-    sampling:
-      probability: 1.0 # Esto asegura que todas las solicitudes se tracen, ajusta según lo necesario
-  metrics:
-    export:
-      prometheus:
-        enabled: true # Si utilizas Prometheus para métricas
-
-# Si quieres exportar trazas a Zipkin
-tracing:
-  zipkin:
-    enabled: true
-    endpoint: http://localhost:9411/api/v2/spans
+spring:
+  application:
+    zipkin: http://localhost:9411
