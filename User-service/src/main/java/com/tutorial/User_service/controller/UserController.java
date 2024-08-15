@@ -1,5 +1,6 @@
 package com.tutorial.User_service.controller;
 
+import brave.Tracer;
 import com.tutorial.User_service.dto.FullUserData;
 import com.tutorial.User_service.entity.UserEntity;
 import com.tutorial.User_service.feignModels.BikeModel;
@@ -11,13 +12,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
     @Autowired
     UserService userService;
+
+    private final Tracer tracer;
+
+    public UserController(Tracer tracer) {
+        this.tracer = tracer;
+    }
 
     @GetMapping("")
     public ResponseEntity<?> listAllUsers() {
@@ -34,8 +44,13 @@ public class UserController {
     @CircuitBreaker(name = "allCB", fallbackMethod = "fallbackGetFullUser")
     @GetMapping("/{userID}/full")
     public ResponseEntity<?> getFullUser(@PathVariable Long userID) {
+        String traceId = tracer.currentSpan().context().traceIdString();
         FullUserData user = this.userService.getFullUserData(userID);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("traceId", traceId);
+        response.put("data", user);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("")
